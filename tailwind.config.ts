@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'poppins': ['Poppins', 'sans-serif'],
+				'pixel': ['Press Start 2P', 'cursive'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -26,11 +30,24 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
+				},
+				'quest-gold': {
+					DEFAULT: 'hsl(var(--quest-gold))',
+					foreground: 'hsl(var(--quest-gold-foreground))'
+				},
+				'battle-red': {
+					DEFAULT: 'hsl(var(--battle-red))',
+					foreground: 'hsl(var(--battle-red-foreground))'
+				},
+				'magic-purple': {
+					DEFAULT: 'hsl(var(--magic-purple))',
+					foreground: 'hsl(var(--magic-purple-foreground))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
