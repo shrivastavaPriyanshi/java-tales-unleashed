@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign Up – Java Tales</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Same internal style for consistency */
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    
+
+    .register-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 40px 35px;
+      width: 380px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      color: white;
+      text-align: center;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.5);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+    }
+
+    #msg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #ffb3b3;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+    }
+
+    .extra {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .extra a {
+      color: #ffd369;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .extra a:hover { text-decoration: underline; }
+  </style>
+</head>
+
+<body>
+
+  <div class="bubbles">
+    <span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="register-box">
+    <h2>Create Your Account 🚀</h2>
+
+   
+
+    <!-- ✅ Correct form ID -->
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email Address" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <p id="msg"></p>
+
+    <div class="extra">
+      Already have an account? <a href="login.html">Login here</a>
+    </div>
+  </div>
+
+  <script src="register.js"></script>
+</body>
+</html>

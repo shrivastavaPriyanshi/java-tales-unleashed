@@ -1,0 +1,36 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import ProgressMap from "./pages/ProgressMap";
+import Leaderboard from "./pages/Leaderboard";
+import About from "./pages/About";
+import NotFound from "./pages/NotFound";
+import Level1 from "./pages/Level1";
+
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/map" element={<ProgressMap />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/about" element={<About />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/level1" element={<Level1 />} />
+
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;

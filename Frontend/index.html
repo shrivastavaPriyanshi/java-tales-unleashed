@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Java Quest - Master the Code</title>
+
+    <meta
+      name="description"
+      content="Learn Java programming through epic adventures. Battle monsters, solve puzzles, and unlock achievements in this gamified coding platform."
+    />
+    <meta name="author" content="Lovable" />
+
+    <meta property="og:title" content="java-tales-unleashed" />
+    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://lovable.dev/opengraph-image-p98pqg.png"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta
+      name="twitter:image"
+      content="https://lovable.dev/opengraph-image-p98pqg.png"
+    />
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 25px;
+        background-color: #20232a;
+        color: white;
+      }
+
+      #logoutBtn {
+        background-color: #e63946;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.3s;
+      }
+
+      #logoutBtn:hover {
+        background-color: #c53030;
+      }
+
+      main {
+        padding: 40px;
+        text-align: center;
+      }
+
+      h1 {
+        color: #333;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h2>Java Quest - Master the Code</h2>
+      <button id="logoutBtn">Logout</button>
+    </header>
+
+    <main>
+      
+      <p id="userInfo">Loading user info...</p>
+      <div id="root"></div>
+    </main>
+
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // ✅ Protect this page: redirect if not logged in
+      document.addEventListener("DOMContentLoaded", () => {
+        const token = localStorage.getItem("token");
+        const email = localStorage.getItem("userEmail");
+
+        if (!token) {
+          // user not logged in
+          window.location.href = "login.html";
+        } else {
+          // show user info
+          const info = document.getElementById("userInfo");
+          info.textContent = `Logged in as: ${email}`;
+        }
+
+        // ✅ Logout functionality
+        const logoutBtn = document.getElementById("logoutBtn");
+        logoutBtn.addEventListener("click", () => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userEmail");
+          alert("Logged out successfully!");
+          window.location.href = "login.html";
+        });
+      });
+    </script>
+  </body>
+</html>
