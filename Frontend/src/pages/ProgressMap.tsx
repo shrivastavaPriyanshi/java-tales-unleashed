@@ -1,211 +1,213 @@
 import { useEffect, useState } from "react";
-import { Header } from "@/components/Layout/Header"; // ✅ Adjust path if needed
-import { motion } from "framer-motion";
+import { Header } from "@/components/Layout/Header";
+import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Star, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+// 🎉 Floating animation for coins & badges
+const FloatingEmoji = ({ emoji }: { emoji: string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 50, x: Math.random() * 800 - 400, scale: 0 }}
+    animate={{
+      opacity: [1, 0.8, 0],
+      y: [50, -300],
+      x: Math.random() * 300 - 150,
+      scale: [1, 1.2, 0.8],
+    }}
+    transition={{ duration: 2.5, ease: "easeOut" }}
+    className="absolute text-4xl select-none pointer-events-none"
+    style={{ left: "50%", top: "50%" }}
+  >
+    {emoji}
+  </motion.div>
+);
 
 const ProgressMap = () => {
-  // 🧩 Define stage data with localStorage-based progress
-  const [stages, setStages] = useState([
-    {
-      id: 1,
-      name: "Beginner Village",
-      description: "Learn Java basics and syntax",
-      status: localStorage.getItem("level1Completed") ? "completed" : "current",
-      icon: "🏘️",
-      position: { x: 20, y: 80 },
-    },
-    {
-      id: 2,
-      name: "OOP Forest",
-      description: "Master Object-Oriented Programming",
-      status: localStorage.getItem("level1Completed") ? "current" : "locked",
-      icon: "🌲",
-      position: { x: 35, y: 60 },
-    },
-    {
-      id: 3,
-      name: "Exception Desert",
-      description: "Handle errors like a pro",
-      status: "locked",
-      icon: "🏜️",
-      position: { x: 60, y: 45 },
-    },
-    {
-      id: 4,
-      name: "Collection Castle",
-      description: "Conquer data structures",
-      status: "locked",
-      icon: "🏰",
-      position: { x: 75, y: 25 },
-    },
-    {
-      id: 5,
-      name: "Final Boss Tower",
-      description: "Ultimate Java challenge",
-      status: "locked",
-      icon: "🗼",
-      position: { x: 85, y: 10 },
-    },
-  ]);
+  const [xp, setXp] = useState(Number(localStorage.getItem("xp") || 0));
+  const [reward, setReward] = useState<string | null>(null);
+  const [emojis, setEmojis] = useState<{ id: number; emoji: string }[]>([]);
+  const [stagesCompleted, setStagesCompleted] = useState(0);
+  const [badges, setBadges] = useState(Math.floor(xp / 100));
 
-  // 🔄 Check progress each time the component mounts
+  const stages = [
+    { id: 1, name: "Beginner Village", icon: "🏘️", desc: "Java basics & syntax" },
+    { id: 2, name: "OOP Forest", icon: "🌲", desc: "Object-oriented programming" },
+    { id: 3, name: "Exception Desert", icon: "🏜️", desc: "Handle runtime errors" },
+    { id: 4, name: "Collection Castle", icon: "🏰", desc: "Data structures mastery" },
+    { id: 5, name: "Thread Jungle", icon: "🌴", desc: "Multithreading concepts" },
+    { id: 6, name: "Stream Valley", icon: "🌊", desc: "Streams & lambdas" },
+    { id: 7, name: "File Mountain", icon: "⛰️", desc: "File I/O mastery" },
+    { id: 8, name: "Networking Harbor", icon: "⚓", desc: "Sockets & networking" },
+    { id: 9, name: "JDBC Temple", icon: "🏛️", desc: "Database connectivity" },
+    { id: 10, name: "Final Boss Tower", icon: "🗼", desc: "Ultimate Java challenge" },
+  ];
+
+  // 🧮 Load stats & rewards
   useEffect(() => {
-    const updated = [...stages];
-    updated[0].status = localStorage.getItem("level1Completed")
-      ? "completed"
-      : "current";
-    updated[1].status = localStorage.getItem("level1Completed")
-      ? "current"
-      : "locked";
-    setStages(updated);
+    const completed = stages.filter((_, i) =>
+      localStorage.getItem(`level${i + 1}Completed`)
+    ).length;
+    setStagesCompleted(completed);
+    const newXP = Number(localStorage.getItem("xp") || 0);
+    setXp(newXP);
+    setBadges(Math.floor(newXP / 100));
+
+    const rewardMsg = localStorage.getItem("reward");
+    if (rewardMsg) {
+      setReward(rewardMsg);
+      localStorage.removeItem("reward");
+      spawnEmojis();
+      setTimeout(() => setReward(null), 4000);
+    }
   }, []);
 
-  // 🎨 Helper to style each stage
-  const getStageClass = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "map-stage unlocked bg-gradient-to-br from-primary to-primary-glow border-primary text-white";
-      case "current":
-        return "map-stage current";
-      case "locked":
-        return "map-stage locked opacity-50";
-      default:
-        return "map-stage locked";
+  // 🎵 Reward sound
+  useEffect(() => {
+    if (reward) {
+      const sound = new Audio("/sounds/levelup.mp3");
+      sound.play().catch(() => console.warn("🔇 Sound autoplay blocked"));
     }
+  }, [reward]);
+
+  // 🎊 Floating coins
+  const spawnEmojis = () => {
+    const emojisToShow = ["💰", "🏅", "⭐", "✨"];
+    emojisToShow.forEach((emoji, i) =>
+      setTimeout(() => {
+        setEmojis((prev) => [...prev, { id: Date.now() + i, emoji }]);
+        setTimeout(
+          () => setEmojis((prev) => prev.filter((e) => e.id !== Date.now() + i)),
+          2500
+        );
+      }, i * 200)
+    );
+  };
+
+  // 🔘 Handle level click
+  const handleStageClick = (id: number) => {
+    const unlocked = id === 1 || localStorage.getItem(`level${id - 1}Completed`);
+    if (!unlocked) {
+      alert("🔒 This stage is locked!");
+      return;
+    }
+    window.location.href = `/level${id}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-quest-gold/10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 overflow-hidden relative">
       <Header />
 
-      <main className="container py-8">
-        {/* 🌟 Header Text */}
+      {/* 🧭 SCROLLABLE CONTAINER */}
+      <div className="w-full overflow-x-auto overflow-y-hidden h-[80vh] scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-transparent">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="relative h-[700px] w-[2800px] mx-auto mt-12 rounded-2xl shadow-inner bg-gradient-to-r from-emerald-100 to-indigo-100 border border-primary/30 overflow-visible"
+          whileTap={{ cursor: "grabbing" }}
         >
-          <h1 className="text-4xl font-bold font-pixel text-primary mb-4">
-            Adventure Map
-          </h1>
-          <p className="text-lg text-muted-foreground font-poppins">
-            Choose your path and embark on your coding journey
-          </p>
-        </motion.div>
-
-        {/* 🗺 Interactive Map */}
-        <div className="relative w-full h-[600px] bg-gradient-to-br from-emerald-100 via-blue-50 to-purple-100 dark:from-emerald-900/20 dark:via-blue-900/20 dark:to-purple-900/20 rounded-3xl border border-border overflow-hidden">
-          {/* Path Lines */}
-          <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+          {/* Path curve */}
+          <svg className="absolute top-0 left-0 w-full h-full z-0">
+            <path
+              d="M 50 600 Q 400 400, 800 600 T 2200 500"
+              stroke="url(#pathGradient)"
+              strokeWidth="6"
+              fill="transparent"
+            />
             <defs>
               <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" />
-                <stop offset="100%" stopColor="hsl(var(--quest-gold))" />
+                <stop offset="0%" stopColor="gold" />
+                <stop offset="100%" stopColor="orange" />
               </linearGradient>
             </defs>
-            {stages.slice(0, -1).map((stage, index) => {
-              const nextStage = stages[index + 1];
-              return (
-                <line
-                  key={`path-${stage.id}`}
-                  x1={`${stage.position.x}%`}
-                  y1={`${stage.position.y}%`}
-                  x2={`${nextStage.position.x}%`}
-                  y2={`${nextStage.position.y}%`}
-                  stroke="url(#pathGradient)"
-                  strokeWidth="4"
-                  strokeDasharray={stage.status === "locked" ? "10,5" : "none"}
-                  opacity={stage.status === "locked" ? 0.3 : 0.8}
-                />
-              );
-            })}
           </svg>
 
-          {/* 🌟 Stage Markers */}
-          {stages.map((stage, index) => (
-            <motion.div
-              key={stage.id}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: index * 0.2, duration: 0.5 }}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2"
-              style={{
-                left: `${stage.position.x}%`,
-                top: `${stage.position.y}%`,
-                zIndex: 10,
-              }}
-            >
-              {/* Clickable Stage Icon */}
+          {/* 🪶 Levels along path */}
+          {stages.map((stage, index) => {
+            const x = 150 + index * 250;
+            const y = index % 2 === 0 ? 400 : 250;
+            const completed = localStorage.getItem(`level${stage.id}Completed`);
+            const unlocked =
+              stage.id === 1 || localStorage.getItem(`level${stage.id - 1}Completed`);
+
+            return (
               <motion.div
-                className={`${getStageClass(stage.status)} text-center cursor-pointer`}
-                whileHover={{ scale: stage.status !== "locked" ? 1.1 : 1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  if (stage.status !== "locked") {
-                    if (stage.id === 1) {
-                      window.location.href = "/level1";
-                    } else if (stage.id === 2 && localStorage.getItem("level1Completed")) {
-                      window.location.href = "/level2"; // 🔓 Level 2 unlocked next
-                    } else {
-                      alert(`🚧 Level ${stage.id} is not unlocked yet!`);
-                    }
-                  } else {
-                    alert("🔒 This stage is locked!");
-                  }
-                }}
+                key={stage.id}
+                className={`absolute flex flex-col items-center text-center ${
+                  unlocked ? "cursor-pointer" : "opacity-60"
+                }`}
+                style={{ left: `${x}px`, top: `${y}px` }}
+                whileHover={{ scale: unlocked ? 1.15 : 1 }}
+                onClick={() => handleStageClick(stage.id)}
               >
-                <div className="text-3xl mb-1">{stage.icon}</div>
-                {stage.status === "completed" && (
-                  <Star className="w-4 h-4 mx-auto text-quest-gold" />
-                )}
-                {stage.status === "locked" && (
-                  <Lock className="w-4 h-4 mx-auto text-muted-foreground" />
-                )}
-                {stage.status === "current" && (
-                  <Play className="w-4 h-4 mx-auto text-quest-gold-foreground" />
-                )}
+                <div
+                  className={`w-20 h-20 flex items-center justify-center rounded-full text-4xl shadow-lg border-4 ${
+                    completed
+                      ? "border-yellow-400 bg-gradient-to-br from-green-400 to-yellow-200"
+                      : unlocked
+                      ? "border-blue-400 bg-white"
+                      : "border-gray-400 bg-gray-200"
+                  }`}
+                >
+                  {stage.icon}
+                </div>
+                <p className="text-sm mt-2 font-semibold">{stage.name}</p>
+                <p className="text-xs text-gray-500 w-[130px]">{stage.desc}</p>
               </motion.div>
-
-              {/* Tooltip Info */}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="absolute top-full mt-4 left-1/2 transform -translate-x-1/2 bg-card border border-border rounded-lg p-4 shadow-lg min-w-[200px] text-center"
-              >
-                <h3 className="font-semibold font-poppins text-sm mb-1">
-                  {stage.name}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {stage.description}
-                </p>
-              </motion.div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* 📊 Progress Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          <div className="adventure-card text-center">
-            <div className="text-2xl font-bold text-primary">1/5</div>
-            <div className="text-sm text-muted-foreground">Stages Completed</div>
-          </div>
-
-          <div className="adventure-card text-center">
-            <div className="text-2xl font-bold text-quest-gold">1,250</div>
-            <div className="text-sm text-muted-foreground">Total XP</div>
-          </div>
-
-          <div className="adventure-card text-center">
-            <div className="text-2xl font-bold text-magic-purple">3</div>
-            <div className="text-sm text-muted-foreground">Badges Earned</div>
-          </div>
+            );
+          })}
         </motion.div>
-      </main>
+      </div>
+
+      {/* 🎯 Stats HUD */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white/70 dark:bg-gray-900/40 backdrop-blur-lg px-8 py-4 rounded-2xl shadow-lg flex items-center gap-10 border border-gray-300"
+      >
+        <div className="text-center">
+          <div className="text-2xl font-bold text-primary">
+            {stagesCompleted}/{stages.length}
+          </div>
+          <div className="text-sm text-gray-600">Stages Completed</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-quest-gold">{xp}</div>
+          <div className="text-sm text-gray-600">Total XP</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-magic-purple">{badges}</div>
+          <div className="text-sm text-gray-600">Badges Earned</div>
+        </div>
+      </motion.div>
+
+      {/* Reward popup */}
+      <AnimatePresence>
+        {reward && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 bg-black/70 flex flex-col items-center justify-center z-[9999]"
+            onClick={() => setReward(null)}
+          >
+            <motion.h2
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: [0.8, 1.2, 1], opacity: [0, 1, 1] }}
+              transition={{ type: "spring", stiffness: 150 }}
+              className="text-5xl font-bold text-yellow-300 drop-shadow-lg mb-4"
+            >
+              {reward}
+            </motion.h2>
+            <p className="text-white text-lg mb-2">
+              🎉 Congratulations! You’ve unlocked the next area!
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating emoji coins */}
+      {emojis.map((e) => (
+        <FloatingEmoji key={e.id} emoji={e.emoji} />
+      ))}
     </div>
   );
 };

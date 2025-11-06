@@ -1,7 +1,7 @@
-import { Header } from "@/components/Layout/Header"; 
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Header } from "@/components/Layout/Header";
 import { useNavigate } from "react-router-dom";
 
 const questions = [
@@ -34,112 +34,152 @@ const questions = [
 const Level1 = () => {
   const [started, setStarted] = useState(false);
   const [current, setCurrent] = useState(0);
-  const [selected, setSelected] = useState("");
+  const [avatarX, setAvatarX] = useState(0);
   const [feedback, setFeedback] = useState("");
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
+  const [completed, setCompleted] = useState(false);
   const navigate = useNavigate();
 
   const handleAnswer = (option: string) => {
-    if (selected) return; // prevent double click
-    setSelected(option);
+    const correct = option === questions[current].answer;
 
-    const isCorrect = option === questions[current].answer;
-    if (isCorrect) {
-      setScore((prev) => prev + 25);
-      setFeedback("✅ Correct! +25 XP");
+    if (correct) {
+      setFeedback("✅ Correct! Moving to next door...");
+      setAvatarX((prev) => prev + 25); // move avatar to next door
+      setTimeout(() => {
+        if (current + 1 < questions.length) {
+          setCurrent((prev) => prev + 1);
+          setFeedback("");
+        } else {
+          // level complete
+          localStorage.setItem("level1Completed", "true");
+          const xp = Number(localStorage.getItem("xp") || 0);
+          localStorage.setItem("xp", String(xp + 100));
+          localStorage.setItem("reward", "🎉 Beginner Village Cleared!");
+          setCompleted(true);
+        }
+      }, 1500);
     } else {
-      setFeedback("❌ Incorrect. Try again!");
+      setFeedback("❌ Wrong! Try again, traveler!");
     }
-
-    // wait 1.2 s, then move next or finish
-    setTimeout(() => {
-      if (current + 1 < questions.length) {
-        setCurrent((prev) => prev + 1);
-        setSelected("");
-        setFeedback("");
-      } else {
-        // ✅ all questions answered → finish
-        setFinished(true);
-        localStorage.setItem("level1Completed", "true");
-        const currentXP = Number(localStorage.getItem("xp") || 0);
-        localStorage.setItem("xp", String(currentXP + score + 25));
-      }
-    }, 1200);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-100 via-blue-50 to-purple-100 dark:from-emerald-900/20 dark:via-blue-900/20 dark:to-purple-900/20">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-emerald-50 to-yellow-100 dark:from-sky-950/50 dark:to-emerald-900/30 relative overflow-hidden">
       <Header />
-      <main className="container py-10 text-center">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold font-pixel text-primary mb-4"
-        >
-          🌾 Beginner Village
-        </motion.h1>
+
+      <main className="container py-8 text-center relative">
+        <h1 className="text-4xl font-bold font-pixel text-primary mb-6">
+          🏘️ Beginner Village
+        </h1>
 
         {!started ? (
           <>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Learn <b>variables</b>, <b>data types</b>, and <b>simple I/O</b> in Java.
-              Answer all 4 questions to earn XP and unlock Level 2!
+            <p className="text-lg mb-6 text-muted-foreground font-poppins">
+              Help our hero 👧 cross the Java Village by answering questions!  
+              Each correct answer opens the next door 🚪
             </p>
-            <Button size="lg" className="btn-quest" onClick={() => setStarted(true)}>
-              🚀 Start Challenge
+            <Button size="lg" onClick={() => setStarted(true)} className="btn-quest">
+              🎮 Start Adventure
             </Button>
           </>
-        ) : !finished ? (
-          /* Question view */
-          <motion.div
-            key={questions[current].id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 dark:bg-gray-900/30 p-6 rounded-xl shadow-lg max-w-md mx-auto"
-          >
-            <h2 className="text-xl font-semibold mb-4">{questions[current].text}</h2>
-            <div className="space-y-3">
-              {questions[current].options.map((opt) => (
-                <Button
-                  key={opt}
-                  variant={selected === opt ? "default" : "outline"}
-                  onClick={() => handleAnswer(opt)}
-                  className="w-full"
-                  disabled={!!selected}
+        ) : (
+          <>
+            {/* GROUND + DOORS */}
+            <div className="relative h-[250px] mt-8 bg-gradient-to-t from-green-300 to-transparent rounded-xl">
+              {/* Doors */}
+              {[0, 1, 2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  className={`absolute bottom-0 bg-yellow-400 border-4 border-yellow-600 rounded-md w-20 h-60 flex items-center justify-center text-3xl ${
+                    i <= current ? "opacity-100" : "opacity-40"
+                  }`}
+                  style={{ left: `${20 + i * 20}%` }}
+                  animate={{
+                    scale: i === current ? [1, 1.05, 1] : 1,
+                  }}
+                  transition={{ duration: 1, repeat: i === current ? Infinity : 0 }}
                 >
-                  {opt}
-                </Button>
+                  🚪
+                </motion.div>
               ))}
+
+              {/* Avatar walking */}
+              <motion.div
+                className="absolute bottom-0 w-16 h-16 text-5xl"
+                animate={{ x: `${avatarX}%` }}
+                transition={{ type: "spring", stiffness: 80 }}
+              >
+                🧍‍♀️
+              </motion.div>
             </div>
 
-            {feedback && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-4 text-md font-medium"
-                style={{ color: feedback.includes("✅") ? "green" : "red" }}
-              >
-                {feedback}
-              </motion.p>
-            )}
-          </motion.div>
-        ) : (
-          /* Completion screen */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-8 bg-white/90 dark:bg-gray-900/40 rounded-2xl shadow-lg max-w-lg mx-auto"
-          >
-            <h2 className="text-3xl font-bold text-green-600 mb-4">
-              🎉 Level 1 Completed!
-            </h2>
-            <p className="text-lg mb-6">
-              You earned <b>{score + 25} XP</b>.<br />
-              Level 2 (OOP Forest) is now unlocked 🌲
-            </p>
-            <Button onClick={() => navigate("/map")}>🗺 Return to Map</Button>
-          </motion.div>
+            {/* Comic-style Question Popup */}
+            <motion.div
+              key={questions[current].id}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white/90 dark:bg-gray-800/80 p-6 rounded-xl shadow-lg border-4 border-black mt-8 max-w-lg mx-auto relative"
+            >
+              <div className="absolute -top-4 left-6 bg-black text-white px-3 py-1 rounded-full text-sm font-semibold">
+                Door {current + 1}
+              </div>
+              <h2 className="text-xl font-semibold mb-4 font-poppins">
+                {questions[current].text}
+              </h2>
+              <div className="grid grid-cols-1 gap-3">
+                {questions[current].options.map((opt) => (
+                  <Button
+                    key={opt}
+                    variant="outline"
+                    onClick={() => handleAnswer(opt)}
+                    className="w-full"
+                  >
+                    {opt}
+                  </Button>
+                ))}
+              </div>
+
+              {feedback && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-4 font-semibold"
+                  style={{
+                    color: feedback.includes("✅") ? "green" : "red",
+                  }}
+                >
+                  {feedback}
+                </motion.p>
+              )}
+            </motion.div>
+
+            {/* Level Complete Popup */}
+            <AnimatePresence>
+              {completed && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/70 flex flex-col items-center justify-center z-[999]"
+                >
+                  <motion.div
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 150 }}
+                    className="bg-yellow-200/90 p-8 rounded-3xl text-center shadow-2xl border-4 border-yellow-500"
+                  >
+                    <h2 className="text-4xl font-bold mb-4">🎉 Mission Complete!</h2>
+                    <p className="text-lg mb-4">
+                      Thanks for helping me reach home 🏡  
+                      You earned <b>100 XP</b>!
+                    </p>
+                    <Button onClick={() => navigate("/map")}>🏆 Return to Map</Button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
         )}
       </main>
     </div>
