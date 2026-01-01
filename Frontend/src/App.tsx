@@ -42,6 +42,8 @@ const AnimatedRoutes = () => {
         <Route path="/friends" element={<Friends />} />
         
 
+        
+
       </Routes>
     </AnimatePresence>
   );
