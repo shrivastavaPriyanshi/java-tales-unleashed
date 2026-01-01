@@ -1,10 +1,10 @@
 import { Header } from "@/components/Layout/Header";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// 🌲 Questions for OOP Forest
+// 🌲 OOP Forest Questions
 const questions = [
   {
     id: 1,
@@ -50,30 +50,28 @@ const Level2 = () => {
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [passed, setPassed] = useState(false);
-  const [avatarX, setAvatarX] = useState(0); // 🧍 Avatar position
-  const [emojis, setEmojis] = useState<{ id: number; emoji: string }[]>([]);
-  const navigate = useNavigate();
 
-  // 🌟 Floating emoji celebration
-  const spawnEmojis = () => {
-    const icons = ["✨", "🏆", "🌟", "💚"];
-    icons.forEach((emoji, i) =>
-      setTimeout(() => {
-        setEmojis((prev) => [...prev, { id: Date.now() + i, emoji }]);
-        setTimeout(() => setEmojis((prev) => prev.filter((e) => e.id !== Date.now() + i)), 2000);
-      }, i * 200)
-    );
-  };
+  const [avatarX, setAvatarX] = useState(0);
+  const [celebrate, setCelebrate] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleAnswer = (option: string) => {
     if (selected) return;
+
     setSelected(option);
     const isCorrect = option === questions[current].answer;
 
     if (isCorrect) {
       setScore((prev) => prev + 25);
-      setFeedback("✅ Correct! +25 XP");
-      setAvatarX((prev) => prev + 200); // move avatar
+      setFeedback("✨ Correct!");
+
+      // move avatar
+      setAvatarX((prev) => prev + 200);
+
+      // celebration glow + confetti
+      setCelebrate(true);
+      setTimeout(() => setCelebrate(false), 1200);
     } else {
       setFeedback("❌ Wrong! Try again.");
     }
@@ -85,13 +83,13 @@ const Level2 = () => {
         setFeedback("");
       } else {
         setFinished(true);
+
         if (score + (isCorrect ? 25 : 0) === 100) {
           setPassed(true);
           localStorage.setItem("level2Completed", "true");
-          localStorage.setItem("reward", "+150 XP Earned!");
           const xp = Number(localStorage.getItem("xp") || 0);
           localStorage.setItem("xp", String(xp + 100));
-          spawnEmojis();
+          localStorage.setItem("reward", "+150 XP Earned!");
         } else {
           setPassed(false);
         }
@@ -103,7 +101,7 @@ const Level2 = () => {
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100">
       <Header />
 
-      {/* 🌲 Animated Forest Background */}
+      {/* 🌲 animated forest bg */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute w-[200%] h-full bg-[url('/forest-bg.png')] bg-repeat-x bg-cover opacity-60"
@@ -112,13 +110,12 @@ const Level2 = () => {
         />
       </div>
 
-      {/* 🧍 Moving Avatar */}
+      {/* 🧙 avatar */}
       {started && !finished && (
         <motion.div
-          initial={{ x: 0 }}
           animate={{ x: avatarX }}
           transition={{ type: "spring", stiffness: 60 }}
-          className="absolute bottom-16 left-16 text-5xl"
+          className="absolute bottom-6 left-12 text-7xl"
         >
           🧙‍♂️
         </motion.div>
@@ -136,28 +133,24 @@ const Level2 = () => {
         {!started ? (
           <>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Welcome to <b>OOP Forest</b>!  
-              Learn <b>Encapsulation, Inheritance,</b> and <b>Classes</b> by answering all 4 questions correctly 🌿.
+              Master <b>Classes</b>, <b>Objects</b> and <b>Encapsulation</b>.
+              Answer everything correctly to unlock the next land 🌿
             </p>
-            <Button size="lg" className="btn-quest" onClick={() => setStarted(true)}>
+
+            <Button size="lg" onClick={() => setStarted(true)}>
               🌟 Enter the Forest
             </Button>
           </>
         ) : !finished ? (
-          // 🧩 Question Bubbles
           <motion.div
             key={questions[current].id}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 dark:bg-gray-900/30 p-6 rounded-xl shadow-lg max-w-md mx-auto border border-green-300"
+            className="bg-white/80 p-6 rounded-xl shadow-lg max-w-md mx-auto border border-green-300"
           >
-            <motion.div
-              className="text-md mb-4 font-semibold"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
+            <div className="font-semibold mb-4">
               💬 {questions[current].text}
-            </motion.div>
+            </div>
 
             <div className="space-y-3">
               {questions[current].options.map((opt) => (
@@ -174,60 +167,92 @@ const Level2 = () => {
             </div>
 
             {feedback && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-4 text-md font-medium"
-                style={{ color: feedback.includes("✅") ? "green" : "red" }}
+              <p
+                className="mt-4 font-medium"
+                style={{ color: feedback.includes("✨") ? "green" : "red" }}
               >
                 {feedback}
-              </motion.p>
+              </p>
             )}
           </motion.div>
         ) : passed ? (
-          // 🏆 Victory Screen
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-8 bg-white/90 dark:bg-gray-900/40 rounded-2xl shadow-lg max-w-lg mx-auto"
+            className="p-8 bg-white/90 rounded-2xl shadow-lg max-w-lg mx-auto"
           >
-            <h2 className="text-3xl font-bold text-green-600 mb-4">🎉 Forest Conquered!</h2>
+            <h2 className="text-3xl font-bold text-green-600 mb-4">
+              🎉 Forest Conquered!
+            </h2>
             <p className="text-lg mb-6">
-              You helped your avatar pass through the forest! 🌲  
-              +100 XP earned — Level 3 (Exception Desert) unlocked 🏜️
+              +100 XP — Level 3 unlocked 🏜️
             </p>
             <Button onClick={() => navigate("/map")}>🗺 Return to Map</Button>
           </motion.div>
         ) : (
-          // ❌ Retry Screen
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-8 bg-white/90 dark:bg-gray-900/40 rounded-2xl shadow-lg max-w-lg mx-auto"
+            className="p-8 bg-white/90 rounded-2xl shadow-lg max-w-lg mx-auto"
           >
-            <h2 className="text-3xl font-bold text-red-600 mb-4">❌ Lost in the Forest!</h2>
+            <h2 className="text-3xl font-bold text-red-600 mb-4">
+              ❌ Lost in the Forest
+            </h2>
             <p className="text-lg mb-6">
-              You scored <b>{score}/100</b>.  
-              To reach the next area, answer all correctly 🌿
+              Score: {score}/100 — Try again 🌿
             </p>
-            <Button onClick={() => window.location.reload()}>🔁 Retry Level</Button>
+            <Button onClick={() => window.location.reload()}>
+              🔁 Retry Level
+            </Button>
           </motion.div>
         )}
       </main>
 
-      {/* Floating emojis */}
-      {emojis.map((e) => (
-        <motion.div
-          key={e.id}
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: -200 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 2 }}
-          className="absolute left-1/2 text-4xl"
-        >
-          {e.emoji}
-        </motion.div>
-      ))}
+      {/* 🎉 Celebration overlay */}
+      <AnimatePresence>
+        {celebrate && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[999] pointer-events-none bg-white/30 backdrop-blur-[2px]"
+          >
+            {/* glow */}
+            <motion.div
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1.4, opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              className="absolute inset-0 bg-gradient-to-br from-green-200/40 via-yellow-100/40 to-white/40"
+            />
+
+            {/* bomb */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "spring", stiffness: 120 }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-7xl"
+            >
+              🎉
+            </motion.div>
+
+            {/* confetti */}
+            {[...Array(14)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ y: -50, x: Math.random() * window.innerWidth }}
+                animate={{ y: window.innerHeight + 50 }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                className="absolute text-3xl"
+              >
+                🎊
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
